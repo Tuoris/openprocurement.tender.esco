@@ -1,5 +1,5 @@
 from datetime import date
-from openprocurement.tender.esco.tests.npv_test_data import DISCOUNT_COEF, DISCOUNT_RATE
+from openprocurement.tender.esco.tests.npv_test_data import DISCOUNT_COEF, DISCOUNT_RATE, CONTRACT_PRICE_DATA
 from openprocurement.tender.esco.constants import DAYS_PER_YEAR, NPV_CALCULATION_DURATION
 from openprocurement.tender.esco.npv_calculation import (
     calculate_contract_duration,
@@ -7,6 +7,7 @@ from openprocurement.tender.esco.npv_calculation import (
     calculate_discount_rates,
     calculate_discount_coef,
     calculate_days_with_cost_reduction,
+    calculate_total_contract_price,
 )
 
 nbu_rate = 0.22
@@ -137,4 +138,68 @@ def days_with_cost_reduction(self):
     self.assertEqual(
         calculate_days_with_cost_reduction(announcement_date, DAYS_PER_YEAR),
         [345] + [365] * NPV_CALCULATION_DURATION
+    )
+
+
+def total_contract_price(self):
+
+    periods = 21
+    prec = 2
+
+    # No payments at all
+    payments = CONTRACT_PRICE_DATA['zero_payments']
+    self.assertEqual(
+        calculate_total_contract_price(payments),
+        0,
+    )
+
+    # Predefined values
+    payments = CONTRACT_PRICE_DATA['predefined_payments']
+    predefined_price = CONTRACT_PRICE_DATA['total_price']
+    total_price = calculate_total_contract_price(payments)
+
+    self.assertEqual(
+        round(predefined_price, prec),
+        round(total_price, prec),
+    )
+
+    # If payments are bigger then total price too
+    last_price = calculate_total_contract_price(CONTRACT_PRICE_DATA['predefined_payments'])
+    additional_payment = 10
+    payments = [
+        p + additional_payment for p in
+        CONTRACT_PRICE_DATA['predefined_payments']
+    ]
+    total_price = calculate_total_contract_price(payments)
+
+    self.assertGreater(
+        round(total_price, prec),
+        round(predefined_price, prec),
+    )
+
+    difference = total_price - predefined_price
+    self.assertEqual(
+        round(additional_payment * periods),
+        round(difference),
+    )
+
+    # If payments are less then total price too
+    custom_payments = [100.00] * periods
+    last_price = calculate_total_contract_price(custom_payments)
+    additional_payment = -10
+    payments = [
+        p + additional_payment for p in
+        custom_payments
+    ]
+    total_price = calculate_total_contract_price(payments)
+
+    self.assertLess(
+        round(total_price, prec),
+        round(last_price, prec),
+    )
+
+    difference = total_price - last_price
+    self.assertEqual(
+        round(additional_payment * periods),
+        round(difference),
     )

@@ -28,3 +28,13 @@ DISCOUNT_RATE = {'first_test': [Fraction(str(0.04623))]+[Fraction(str(0.125))]*1
                  'second_test': [Fraction(str(0))]*21,
                  'third_test': [Fraction(str(0.12500))] * 21
                  }
+
+CONTRACT_PRICE_DATA = {
+    'total_price': 397.95,
+    'zero_payments': [0] * 21,
+
+    'predefined_payments': [
+        Fraction(str(p)) for p in
+        [64.73, 175.00, 158.22] + [0.00] * (21 - 3)
+    ],
+}

@@ -52,3 +52,9 @@ def calculate_days_with_cost_reduction(
         ):
     first_year_days = (date(announcement_date.year, 12, 31) - announcement_date).days
     return [first_year_days] + [days_per_year] * NPV_CALCULATION_DURATION
+
+
+def calculate_total_contract_price(client_payments):
+    '''Calculates total price of energy service contract'''
+
+    return sum(client_payments)
